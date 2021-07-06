@@ -1,0 +1,73 @@
+> library(readxl)
+> itcOpen <- read_excel("C:/Users/ANISH/Downloads/itcOpen.xlsx")
+> View(itcOpen)
+> itcOpen_ts<-ts(itcOpen[,2], frequency=12,start=c(2000))
+> plot.ts(itcOpen_ts)
+
+#ARIMA 
+
+#Checking for Stationarity
+adf.test(itcOpen_ts, alternative = "stationary", k=0)
+stationary.test(itcOpen_ts)
+stationary.test(itcOpen_ts, method="pp")
+stationary.test(itcOpen_ts, method = "kpss")
+
+#Differnecing to get statioinarity
+itcOpen_ts_diff1<-diff(itcOpen_ts, diff=1)
+itcOpen_ts_diff1
+plot.ts(itcOpen_ts_diff1)
+#Checking if we got stationarity after differencing
+adf.test(itcOpen_ts_diff1, alternative="stationary", k=0)
+stationary.test(itcOpen_ts_diff1)
+stationary.test(itcOpen_ts_diff1, method="pp")
+stationary.test(itcOpen_ts_diff1, method = "kpss")
+
+#Determing arima model
+acf(itcOpen_ts_diff1, lag.max = 20)
+acf(itcOpen_ts_diff1, lag.max = 20, plot = FALSE)
+pacf(itcOpen_ts_diff1, lag.max = 20)
+pacf(itcOpen_ts_diff1, lag.max = 20, plot = FALSE)
+auto.arima(itcOpen_ts)
+auto.arima(itcOpen_ts_diff1)
+
+#fitting the arima model
+itcOpen_tsarima <- arima(itcOpen_ts, order = c(0,1,0), seasonal = c(0,0,1))
+itcOpen_tsarima
+
+#making Forecasts
+itcOpen_tsforecasts <- forecast::forecast(itcOpen_tsarima, h=10, level=c(95))
+plot(itcOpen_tsforecasts)
+itcOpen_tsforecasts
+
+#goodness of forecast
+acf(itcOpen_tsforecasts$residuals, lag.max = 20)
+Box.test(itcOpen_tsforecasts$residuals, lag = 20, type = "Ljung-Box")
+plot.ts(itcOpen_tsforecasts$residuals)
+hist(itcOpen_tsforecasts$residuals)
+
+#ARDL/FDL 
+> library(readxl)
+> itcVolume <- read_excel("C:/Users/ANISH/Downloads/itcVolume.xls")
+> View(itcVolume)
+> itcVolume_ts<-ts(itcVolume[,7], frequency=12,start=c(2000))
+> plot.ts(itcVolume_ts)
+
+#Checking for Stationarity
+adf.test(itcVolume_ts, alternative = "stationary", k=0)
+stationary.test(itcVolume_ts)
+stationary.test(itcVolume_ts, method="pp")
+stationary.test(itcVolume_ts, method = "kpss")
+
+#Differnecing to get statioinarity
+itcVolume_ts_diff1<-diff(itcVolume_ts, diff=1)
+itcVolume_ts_diff1
+plot.ts(itcVolume_ts_diff1)
+#Checking if we got stationarity after differencing
+adf.test(itcVolume_ts_diff1, alternative="stationary", k=0)
+stationary.test(itcVolume_ts_diff1)
+stationary.test(itcVolume_ts_diff1, method="pp")
+stationary.test(itcVolume_ts_diff1, method = "kpss")
+
+> itcVolume_ts<- ts(itcVolume, frequency = 12, start = c(2000))
+> itcVolume_dyn<-dynlm(d(Open)~L((Volume),0:3), data=itcVolume_ts)
+> itcVolume_dyn
